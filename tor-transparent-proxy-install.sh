@@ -40,6 +40,7 @@ function configure_iptables() {
     iptables -F
     iptables -t nat -F
     iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 22 -j REDIRECT --to-ports 22 #SSH
+    iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 9090 -j REDIRECT --to-ports 9090 #TOR Socks port
     iptables -t nat -A PREROUTING -i eth0 -p tcp --syn -j REDIRECT --to-ports 9040
     iptables -t nat -A PREROUTING -i eth0 -p udp --dport 53 -j REDIRECT --to-ports 5353
 
