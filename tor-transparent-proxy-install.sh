@@ -168,6 +168,7 @@ END
     echo "$script_contents" >"$FILE_PATH"
 
     systemctl daemon-reload
+    systemctl enable tor_auto_update_bridges.service
     systemctl start tor_auto_update_bridges
 }
 
