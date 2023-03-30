@@ -11,6 +11,7 @@ function install_tor {
             apt-get update
             apt-get install apt-transport-https -y
             apt-get install tor deb.torproject.org-keyring -y
+            apt-get install tor-geoipdb -y
             echo "Tor has been installed successfully."
         else
             echo "This script requires root privileges to install Tor. Please run with sudo or as root user."
