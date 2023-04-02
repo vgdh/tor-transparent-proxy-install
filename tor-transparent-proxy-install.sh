@@ -126,8 +126,8 @@ done
 
 echo "No internet connection found after multiple attempts."
 echo "Start updating TOR bridges"
-PY_VERSION=$(ls -1 /usr/bin/python* | grep -Eo 'python[0-9]\.[0-9]+' | sort -V | tail -n1 | cut -c7-)
-PYTHON=python$PY_VERSION
+PY_VERSION=\$(ls -1 /usr/bin/python* | grep -Eo 'python[0-9]\.[0-9]+' | sort -V | tail -n1 | cut -c7-)
+PYTHON=python\$PY_VERSION
 $PYTHON /tor_transparent_proxy/tor-relay-scanner-latest.pyz --torrc -o /tor_transparent_proxy/bridges.conf
 
 echo "Now restaring tor services in order to use new bridges"
