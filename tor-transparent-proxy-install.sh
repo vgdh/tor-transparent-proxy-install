@@ -132,6 +132,7 @@ PYTHON=python\$PY_VERSION
 
 echo "Now restaring tor services in order to use new bridges"
 systemctl restart tor
+sleep 20
 
 END
     )
@@ -155,8 +156,8 @@ Description=tor auto update bridges script
 Type=simple
 ExecStart=/tor_transparent_proxy/check-and-update-bridges.sh
 Restart=always
-RestartSec=60
-TimeoutStopSec=60
+RestartSec=10
+TimeoutStopSec=600
 
 [Install]
 WantedBy=multi-user.target
