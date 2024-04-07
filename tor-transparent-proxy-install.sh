@@ -9,11 +9,16 @@ function install_tor {
         echo "Tor is not installed. Enabling Tor package repository and installing Tor..."
         if [ $(id -u) -eq 0 ]; then
             echo "Running as root user"
+
             echo "deb     [signed-by=/usr/share/keyrings/tor-archive-keyring.gpg] https://deb.torproject.org/torproject.org $(lsb_release -cs) main" >> /etc/apt/sources.list.d/tor.list
             echo "deb-src [signed-by=/usr/share/keyrings/tor-archive-keyring.gpg] https://deb.torproject.org/torproject.org $(lsb_release -cs) main" >> /etc/apt/sources.list.d/tor.list
-            wget -qO- https://deb.torproject.org/torproject.org/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc | gpg --dearmor | tee /usr/share/keyrings/tor-archive-keyring.gpg >/dev/null
+            
             apt-get update
-            apt-get install apt-transport-https -y
+            apt-get install apt-transport-https -y            
+            apt-get install gpg -y
+            wget -qO- https://deb.torproject.org/torproject.org/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc | gpg --dearmor | tee /usr/share/keyrings/tor-archive-keyring.gpg >/dev/null
+            
+            apt-get update
             apt-get install tor deb.torproject.org-keyring -y
             apt-get install tor-geoipdb -y
             echo "Tor has been installed successfully."
@@ -128,13 +133,17 @@ function copy_scripts_to_install_folder() {
 }
 
 function create_service_tor_auto_update_bridges() {
+    SERVICE_PATH="/etc/systemd/system"
 
-    cp $SCRIPT_DIR/tor_proxy_bridges_updater.service $INSTALL_PATH/tor_proxy_bridges_updater.service
-    cp $SCRIPT_DIR/tor_proxy_connectivity_checker.service $INSTALL_PATH/tor_proxy_connectivity_checker.service
+    cp $SCRIPT_DIR/tor_proxy_bridges_updater.service $SERVICE_PATH/tor_proxy_bridges_updater.service
+    cp $SCRIPT_DIR/tor_proxy_connectivity_checker.service $SERVICE_PATH/tor_proxy_connectivity_checker.service
 
     systemctl daemon-reload
-    systemctl enable tor_auto_update_bridges.service
-    systemctl start tor_auto_update_bridges
+    systemctl enable tor_proxy_bridges_updater.service
+    systemctl start tor_proxy_bridges_updater
+
+    systemctl enable tor_proxy_connectivity_checker.service
+    systemctl start tor_proxy_connectivity_checker
 }
 
 
