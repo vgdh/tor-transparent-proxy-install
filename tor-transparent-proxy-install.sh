@@ -2,6 +2,8 @@
 
 INSTALL_PATH="/opt/tor-transparent-proxy"
 
+SCRIPT_DIR=$(dirname "$0") # Get the directory of the script
+
 function install_tor {
     if ! [ -x "$(command -v tor)" ]; then
         echo "Tor is not installed. Enabling Tor package repository and installing Tor..."
@@ -49,9 +51,9 @@ function configure_iptables() {
     iptables -F
     iptables -t nat -F
     iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 22 -j REDIRECT --to-ports 22 #SSH
-    iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 9090 -j REDIRECT --to-ports 9090 #TOR Socks port
-    iptables -t nat -A PREROUTING -i eth0 -p tcp --syn -j REDIRECT --to-ports 9040
-    iptables -t nat -A PREROUTING -i eth0 -p udp --dport 53 -j REDIRECT --to-ports 5353
+    iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 9090 -j REDIRECT --to-ports 9090 #TOR SocksPort port
+    iptables -t nat -A PREROUTING -i eth0 -p tcp --syn -j REDIRECT --to-ports 9040 #TOR TransPort port
+    iptables -t nat -A PREROUTING -i eth0 -p udp --dport 53 -j REDIRECT --to-ports 5353 #TOR DNSPort port 
 
     # Autoload iptables rules
     debconf-set-selections <<EOF
@@ -72,8 +74,6 @@ function configure_tor() {
     touch $INSTALL_PATH/tmp_bridges.conf
     touch $INSTALL_PATH/new_bridges.conf
     touch $INSTALL_PATH/current_bridges.conf
-
-
 
     MY_IP=$(hostname -I | awk '{print $1}')
 
@@ -106,30 +106,31 @@ function configure_tor() {
 }
 
 function download_latest_tor_relay_scanner() {
-    FILE_PATH="$INSTALL_PATH/tor-relay-scanner-latest.pyz"
+    TOR_SCANNER_FILE_PATH="$INSTALL_PATH/tor-relay-scanner-latest.pyz"
 
     echo "Download tor-relay-scanner-latest"
 
-    # Download latest version
-    # curl -s https://api.github.com/repos/ValdikSS/tor-relay-scanner/releases/latest |
-    #     grep "browser_download_url.*pyz" |
-    #     cut -d : -f 2,3 |
-    #     tr -d \" |
-    #     wget -i - -O $FILE_PATH
+    #Download latest version
+    curl -s https://api.github.com/repos/ValdikSS/tor-relay-scanner/releases/latest |
+        grep "browser_download_url.*pyz" |
+        cut -d : -f 2,3 |
+        tr -d \" |
+        wget -i - -O $TOR_SCANNER_FILE_PATH
 
-    wget https://github.com/ValdikSS/tor-relay-scanner/releases/download/1.0.0/tor-relay-scanner-1.0.0.pyz -O $FILE_PATH
+    #Download fixed version
+    # wget https://github.com/ValdikSS/tor-relay-scanner/releases/download/1.0.0/tor-relay-scanner-1.0.0.pyz -O $TOR_SCANNER_FILE_PATH
 }
 
 function copy_scripts_to_install_folder() {
 
-    cp tor_proxy_bridges_updater.sh $INSTALL_PATH/tor_proxy_bridges_updater.sh
-    cp tor_proxy_connectivity_checker.sh $INSTALL_PATH/tor_proxy_connectivity_checker.sh
+    cp $SCRIPT_DIR/tor_proxy_bridges_updater.sh $INSTALL_PATH/tor_proxy_bridges_updater.sh
+    cp $SCRIPT_DIR/tor_proxy_connectivity_checker.sh $INSTALL_PATH/tor_proxy_connectivity_checker.sh
 }
 
 function create_service_tor_auto_update_bridges() {
 
-    cp tor_proxy_bridges_updater.service $INSTALL_PATH/tor_proxy_bridges_updater.service
-    cp tor_proxy_connectivity_checker.service $INSTALL_PATH/tor_proxy_connectivity_checker.service
+    cp $SCRIPT_DIR/tor_proxy_bridges_updater.service $INSTALL_PATH/tor_proxy_bridges_updater.service
+    cp $SCRIPT_DIR/tor_proxy_connectivity_checker.service $INSTALL_PATH/tor_proxy_connectivity_checker.service
 
     systemctl daemon-reload
     systemctl enable tor_auto_update_bridges.service
