@@ -1,5 +1,7 @@
 #!/bin/bash
 
+INSTALL_PATH="/opt/tor-transparent-proxy"
+
 function install_tor {
     if ! [ -x "$(command -v tor)" ]; then
         echo "Tor is not installed. Enabling Tor package repository and installing Tor..."
@@ -66,8 +68,12 @@ EOF
 }
 
 function configure_tor() {
-    mkdir /tor_transparent_proxy
-    touch /tor_transparent_proxy/bridges.conf
+    mkdir $INSTALL_PATH
+    touch $INSTALL_PATH/tmp_bridges.conf
+    touch $INSTALL_PATH/new_bridges.conf
+    touch $INSTALL_PATH/current_bridges.conf
+
+
 
     MY_IP=$(hostname -I | awk '{print $1}')
 
@@ -77,101 +83,53 @@ function configure_tor() {
     replace_or_add_line /etc/tor/torrc "AutomapHostsOnResolve" "AutomapHostsOnResolve 1"
     replace_or_add_line /etc/tor/torrc "ExcludeExitNodes" "ExcludeExitNodes {ru},{ua},{by},{kz},{??}"
 
-    replace_or_add_line /etc/tor/torrc "SocksPort $MY_IP:9090" "SocksPort $MY_IP:9090"
-    replace_or_add_line /etc/tor/torrc "SocksPort 127.0.0.1:9090" "SocksPort 127.0.0.1:9090"
+    #(assuming this is the static IP address of the server)
+    ip_addresses=$(hostname -I | awk '{print $0}' | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+')
+
+    delete_all_lines /etc/tor/torrc "SocksPort"
+    for ip in $ip_addresses; do
+        echo "SocksPort $ip:9090" >> /etc/tor/torrc 
+    done
+
+    delete_all_lines /etc/tor/torrc "TransPort"
+    for ip in $ip_addresses; do
+        echo "TransPort $ip:9040" >> /etc/tor/torrc 
+    done
+
+    delete_all_lines /etc/tor/torrc "DNSPort"
+    for ip in $ip_addresses; do
+        echo "DNSPort $ip:5353" >> /etc/tor/torrc 
+    done
 
     #enable bridges
-    replace_or_add_line /etc/tor/torrc "%include /tor_transparent_proxy/bridges.conf" "%include /tor_transparent_proxy/bridges.conf"
-    #replace_or_add_line /etc/tor/torrc "UseBridges" "UseBridges 1"
-
-    #(assuming this is the static IP address of the server)
-    replace_or_add_line /etc/tor/torrc "TransPort" "TransPort $MY_IP:9040"
-    replace_or_add_line /etc/tor/torrc "DNSPort" "DNSPort $MY_IP:5353"
-
+    replace_or_add_line /etc/tor/torrc "%include" "%include $INSTALL_PATH/current_bridges.conf"
 }
 
 function download_latest_tor_relay_scanner() {
-    FILE_PATH="/tor_transparent_proxy/tor-relay-scanner-latest.pyz"
-    if [ ! -f "$FILE_PATH" ]; then
-        # Perform some commands here
-        echo "File tor-relay-scanner-latest does not exist"
-        echo "Download latest"
+    FILE_PATH="$INSTALL_PATH/tor-relay-scanner-latest.pyz"
 
-        # Download latest version
-        # curl -s https://api.github.com/repos/ValdikSS/tor-relay-scanner/releases/latest |
-        #     grep "browser_download_url.*pyz" |
-        #     cut -d : -f 2,3 |
-        #     tr -d \" |
-        #     wget -i - -O $FILE_PATH
+    echo "Download tor-relay-scanner-latest"
 
-        wget https://github.com/ValdikSS/tor-relay-scanner/releases/download/0.0.9/tor-relay-scanner-0.0.9.pyz -O $FILE_PATH
-    else
-        echo "File $FILE_PATH exists"
-    fi
+    # Download latest version
+    # curl -s https://api.github.com/repos/ValdikSS/tor-relay-scanner/releases/latest |
+    #     grep "browser_download_url.*pyz" |
+    #     cut -d : -f 2,3 |
+    #     tr -d \" |
+    #     wget -i - -O $FILE_PATH
+
+    wget https://github.com/ValdikSS/tor-relay-scanner/releases/download/1.0.0/tor-relay-scanner-1.0.0.pyz -O $FILE_PATH
 }
 
-function create_script_for_auto_update_bridges() {
-    FILE_PATH="/tor_transparent_proxy/check-and-update-bridges.sh"
+function copy_scripts_to_install_folder() {
 
-    script_contents=$(
-        cat <<END
-#!/bin/bash
-
-count=0
-while [[ \$count -lt 5 ]]; do
-    if curl -s --head  --socks5 127.0.0.1:9090 --request GET google.com --connect-timeout 10 | grep "HTTP" > /dev/null; then
-        echo "Internet connection detected."
-        exit 0
-    else
-        echo "Internet connection not detected, wait and try again"
-    fi
-    count=\$((count + 1))
-    sleep 10
-done
-
-echo "No internet connection found after multiple attempts."
-echo "Start updating TOR bridges"
-PY_VERSION=\$(ls -1 /usr/bin/python* | grep -Eo 'python[0-9]\.[0-9]+' | sort -V | tail -n1 | cut -c7-)
-PYTHON=python\$PY_VERSION
-\$PYTHON /tor_transparent_proxy/tor-relay-scanner-latest.pyz --torrc -o /tor_transparent_proxy/bridges.conf -g 100 -n 100
-
-echo "Now restaring tor services in order to use new bridges"
-systemctl restart tor
-sleep 600
-
-END
-    )
-
-    # Create the new script file
-    echo "$script_contents" >"$FILE_PATH"
-
-    # Make the new script executable
-    chmod +x "$FILE_PATH"
+    cp tor_proxy_bridges_updater.sh $INSTALL_PATH/tor_proxy_bridges_updater.sh
+    cp tor_proxy_connectivity_checker.sh $INSTALL_PATH/tor_proxy_connectivity_checker.sh
 }
 
 function create_service_tor_auto_update_bridges() {
-    FILE_PATH="/etc/systemd/system/tor_auto_update_bridges.service"
 
-    script_contents=$(
-        cat <<END
-[Unit]
-Description=tor auto update bridges script
-
-[Service]
-Type=simple
-ExecStart=/tor_transparent_proxy/check-and-update-bridges.sh
-Restart=always
-RestartSec=10
-TimeoutStopSec=600
-
-[Install]
-WantedBy=multi-user.target
-
-END
-    )
-
-    # Create the new script file
-    echo "$script_contents" >"$FILE_PATH"
+    cp tor_proxy_bridges_updater.service $INSTALL_PATH/tor_proxy_bridges_updater.service
+    cp tor_proxy_connectivity_checker.service $INSTALL_PATH/tor_proxy_connectivity_checker.service
 
     systemctl daemon-reload
     systemctl enable tor_auto_update_bridges.service

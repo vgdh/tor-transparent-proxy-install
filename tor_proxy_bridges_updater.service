@@ -1,0 +1,12 @@
+[Unit]
+Description=tor proxy proxy bridges updater
+
+[Service]
+Type=simple
+ExecStart=/opt/tor-transparent-proxy/tor_proxy_bridges_updater.sh
+Restart=always
+RestartSec=10
+TimeoutStopSec=600
+
+[Install]
+WantedBy=multi-user.target
