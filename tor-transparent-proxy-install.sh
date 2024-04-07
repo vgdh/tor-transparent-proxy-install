@@ -35,6 +35,12 @@ function replace_or_add_line {
     fi
 }
 
+function delete_all_lines {
+    file="$1"
+    search_text="$2"
+    sed -i "/$search_text/d" $file
+}
+
 
 function configure_iptables() {
     echo "Configure IP tables"
@@ -85,7 +91,6 @@ function configure_tor() {
 }
 
 function download_latest_tor_relay_scanner() {
-
     FILE_PATH="/tor_transparent_proxy/tor-relay-scanner-latest.pyz"
     if [ ! -f "$FILE_PATH" ]; then
         # Perform some commands here
