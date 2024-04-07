@@ -10,14 +10,18 @@ function install_tor {
         if [ $(id -u) -eq 0 ]; then
             echo "Running as root user"
 
+            echo "Add TOR keyrings"
             echo "deb     [signed-by=/usr/share/keyrings/tor-archive-keyring.gpg] https://deb.torproject.org/torproject.org $(lsb_release -cs) main" >> /etc/apt/sources.list.d/tor.list
             echo "deb-src [signed-by=/usr/share/keyrings/tor-archive-keyring.gpg] https://deb.torproject.org/torproject.org $(lsb_release -cs) main" >> /etc/apt/sources.list.d/tor.list
             
             apt-get update
             apt-get install apt-transport-https -y            
             apt-get install gpg -y
+
+            echo "Add TOR gpg key"
             wget -qO- https://deb.torproject.org/torproject.org/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc | gpg --dearmor | tee /usr/share/keyrings/tor-archive-keyring.gpg >/dev/null
             
+            echo "Install TOR"
             apt-get update
             apt-get install tor deb.torproject.org-keyring -y
             apt-get install tor-geoipdb -y
@@ -93,18 +97,23 @@ function configure_tor() {
 
     delete_all_lines /etc/tor/torrc "SocksPort"
     for ip in $ip_addresses; do
+        echo "SocksPort 127.0.0.1:9090" >> /etc/tor/torrc 
         echo "SocksPort $ip:9090" >> /etc/tor/torrc 
     done
 
     delete_all_lines /etc/tor/torrc "TransPort"
     for ip in $ip_addresses; do
+        echo "TransPort 127.0.0.1:9040" >> /etc/tor/torrc 
         echo "TransPort $ip:9040" >> /etc/tor/torrc 
     done
 
     delete_all_lines /etc/tor/torrc "DNSPort"
     for ip in $ip_addresses; do
+        echo "DNSPort 127.0.0.1:5353" >> /etc/tor/torrc 
         echo "DNSPort $ip:5353" >> /etc/tor/torrc 
     done
+
+
 
     #enable bridges
     replace_or_add_line /etc/tor/torrc "%include" "%include $INSTALL_PATH/current_bridges.conf"
@@ -152,7 +161,7 @@ main() {
     configure_iptables
     configure_tor
     download_latest_tor_relay_scanner
-    create_script_for_auto_update_bridges
+    copy_scripts_to_install_folder
     create_service_tor_auto_update_bridges
 
     systemctl restart tor
