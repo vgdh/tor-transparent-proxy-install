@@ -91,28 +91,29 @@ function configure_tor() {
     replace_or_add_line /etc/tor/torrc "AutomapHostsOnResolve" "AutomapHostsOnResolve 1"
     replace_or_add_line /etc/tor/torrc "ExcludeExitNodes" "ExcludeExitNodes {ru},{ua},{by},{kz},{??}"
 
-    #(assuming this is the static IP address of the server)
-    ip_addresses=$(hostname -I | awk '{print $0}' | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+')
+    # #(assuming this is the static IP address of the server)
+    # ip_addresses=$(hostname -I | awk '{print $0}' | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+')
 
-    delete_all_lines /etc/tor/torrc "SocksPort"
-    for ip in $ip_addresses; do
-        echo "SocksPort 127.0.0.1:9090" >> /etc/tor/torrc 
-        echo "SocksPort $ip:9090" >> /etc/tor/torrc 
-    done
+    # delete_all_lines /etc/tor/torrc "SocksPort"
+    # for ip in $ip_addresses; do
+    #     echo "SocksPort 127.0.0.1:9090" >> /etc/tor/torrc 
+    #     echo "SocksPort $ip:9090" >> /etc/tor/torrc 
+    # done
 
-    delete_all_lines /etc/tor/torrc "TransPort"
-    for ip in $ip_addresses; do
-        echo "TransPort 127.0.0.1:9040" >> /etc/tor/torrc 
-        echo "TransPort $ip:9040" >> /etc/tor/torrc 
-    done
+    # delete_all_lines /etc/tor/torrc "TransPort"
+    # for ip in $ip_addresses; do
+    #     echo "TransPort 127.0.0.1:9040" >> /etc/tor/torrc 
+    #     echo "TransPort $ip:9040" >> /etc/tor/torrc 
+    # done
 
-    delete_all_lines /etc/tor/torrc "DNSPort"
-    for ip in $ip_addresses; do
-        echo "DNSPort 127.0.0.1:5353" >> /etc/tor/torrc 
-        echo "DNSPort $ip:5353" >> /etc/tor/torrc 
-    done
-
-
+    # delete_all_lines /etc/tor/torrc "DNSPort"
+    # for ip in $ip_addresses; do
+    #     echo "DNSPort 127.0.0.1:5353" >> /etc/tor/torrc 
+    #     echo "DNSPort $ip:5353" >> /etc/tor/torrc 
+    # done
+    echo "SocksPort 0.0.0.0:9090" >> /etc/tor/torrc 
+    echo "TransPort 0.0.0.0:9040" >> /etc/tor/torrc 
+    echo "DNSPort 0.0.0.0:5353" >> /etc/tor/torrc 
 
     #enable bridges
     replace_or_add_line /etc/tor/torrc "%include" "%include $INSTALL_PATH/current_bridges.conf"
