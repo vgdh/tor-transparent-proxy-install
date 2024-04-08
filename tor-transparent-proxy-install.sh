@@ -93,7 +93,7 @@ function configure_nftables() {
 
     nft -f test.nft
 
-    echo "#!/usr/sbin/nft -f" > 
+    echo "#!/usr/sbin/nft -f" > /etc/nftables.conf
     echo "flush ruleset" >> /etc/nftables.conf
     nft list ruleset  >> /etc/nftables.conf
 
