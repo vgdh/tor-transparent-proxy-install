@@ -138,7 +138,8 @@ function copy_scripts_to_install_folder() {
     echo "Copy bridge updater script and run it"
     cp $SCRIPT_DIR/tor_proxy_bridges_updater.sh $INSTALL_PATH/tor_proxy_bridges_updater.sh
     $INSTALL_PATH/tor_proxy_bridges_updater.sh
-    echo "Copy bridges to current configuration"
+    
+    echo "Copy bridges to /etc/tor/bridges.conf"
     cp $INSTALL_PATH/new_bridges.conf /etc/tor/bridges.conf
 
     echo "Copy connectivity checker script"

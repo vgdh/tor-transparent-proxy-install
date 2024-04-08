@@ -5,7 +5,7 @@ Description=tor proxy proxy bridges updater
 Type=simple
 ExecStart=/opt/tor-transparent-proxy/tor_proxy_bridges_updater.sh
 Restart=always
-RestartSec=10
+RestartSec=60
 TimeoutStopSec=600
 
 [Install]
