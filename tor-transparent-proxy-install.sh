@@ -79,7 +79,7 @@ function configure_tor() {
     mkdir $INSTALL_PATH
     touch $INSTALL_PATH/tmp_bridges.conf
     touch $INSTALL_PATH/new_bridges.conf
-    touch $INSTALL_PATH/current_bridges.conf
+
 
     MY_IP=$(hostname -I | awk '{print $1}')
 
@@ -137,10 +137,8 @@ function copy_scripts_to_install_folder() {
 
     echo "Copy bridge updater script and run it"
     cp $SCRIPT_DIR/tor_proxy_bridges_updater.sh $INSTALL_PATH/tor_proxy_bridges_updater.sh
-    $INSTALL_PATH/tor_proxy_bridges_updater.sh
-    
-    echo "Copy bridges to /etc/tor/bridges.conf"
-    cp $INSTALL_PATH/new_bridges.conf /etc/tor/bridges.conf
+    touch $INSTALL_PATH/current_bridges.conf
+    $INSTALL_PATH/tor_proxy_bridges_updater.sh 10 /etc/tor/bridges.conf
 
     echo "Copy connectivity checker script"
     cp $SCRIPT_DIR/tor_proxy_connectivity_checker.sh $INSTALL_PATH/tor_proxy_connectivity_checker.sh
