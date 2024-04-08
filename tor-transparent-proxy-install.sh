@@ -53,7 +53,7 @@ function delete_all_lines {
 
 function configure_nftables() {
 
-    RULESET_FILE_PATH='$SCRIPT_DIR/ruleset.nft'
+    RULESET_FILE_PATH=$SCRIPT_DIR/ruleset.nft
 
     echo "This file has been generated during installation you can safely delete it" > $RULESET_FILE_PATH # create RULESET_FILE_PATH
     echo "add table ip nat" >> $RULESET_FILE_PATH
