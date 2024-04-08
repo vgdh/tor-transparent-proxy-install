@@ -56,10 +56,11 @@ function configure_iptables() {
     echo "Configure IP tables"
     iptables -F
     iptables -t nat -F
-    iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 22 -j REDIRECT --to-ports 22 #SSH
-    iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 9090 -j REDIRECT --to-ports 9090 #TOR SocksPort port
-    iptables -t nat -A PREROUTING -i eth0 -p tcp --syn -j REDIRECT --to-ports 9040 #TOR TransPort port
-    iptables -t nat -A PREROUTING -i eth0 -p udp --dport 53 -j REDIRECT --to-ports 5353 #TOR DNSPort port 
+    iptables -t nat -A PREROUTING -i any -p tcp --dport 22 -j REDIRECT --to-ports 22 #SSH
+    iptables -t nat -A PREROUTING -i any -p tcp --dport 9090 -j REDIRECT --to-ports 9090 #TOR SocksPort port
+    iptables -t nat -A PREROUTING -i any -p udp --dport 53 -j REDIRECT --to-ports 5353 #TOR DNSPort port 
+    iptables -t nat -A PREROUTING -i any -p tcp --syn -j REDIRECT --to-ports 9040 #TOR TransPort port
+
 
     # Autoload iptables rules
     debconf-set-selections <<EOF
