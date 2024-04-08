@@ -54,9 +54,8 @@ function delete_all_lines {
 function configure_nftables() {
 
     RULESET_FILE_PATH=$SCRIPT_DIR/ruleset.nft
-
-    echo "This file has been generated during installation you can safely delete it" > $RULESET_FILE_PATH # create RULESET_FILE_PATH
-    echo "add table ip nat" >> $RULESET_FILE_PATH
+    
+    echo "add table ip nat" > $RULESET_FILE_PATH
     echo "add chain ip nat PREROUTING { type nat hook prerouting priority -100; policy accept; }" >> $RULESET_FILE_PATH
     echo "add chain ip nat INPUT { type nat hook input priority 100; policy accept; }" >> $RULESET_FILE_PATH
     echo "add chain ip nat OUTPUT { type nat hook output priority -100; policy accept; }" >> $RULESET_FILE_PATH
