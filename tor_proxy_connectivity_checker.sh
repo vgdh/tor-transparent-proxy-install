@@ -17,7 +17,7 @@ done
 echo "No internet connection found after multiple attempts."
 echo "Lets use new TOR bridges"
 
-cp $INSTALL_PATH/new_bridges.conf $INSTALL_PATH/current_bridges.conf
+cp $INSTALL_PATH/new_bridges.conf /etc/tor/bridges.conf
 
 echo "Now restaring tor services in order to use new bridges"
 systemctl restart tor

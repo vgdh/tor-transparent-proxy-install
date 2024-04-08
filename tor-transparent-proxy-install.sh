@@ -10,8 +10,7 @@ function install_tor {
         if [ $(id -u) -eq 0 ]; then
             echo "Running as root user"
             apt-get update
-            apt-get install apt-transport-https -y            
-            apt-get install gpg -y
+            apt-get install gpg apt-transport-https -y            
 
             echo "Add TOR keyrings"
             echo "deb     [signed-by=/usr/share/keyrings/tor-archive-keyring.gpg] https://deb.torproject.org/torproject.org $(lsb_release -cs) main" >> /etc/apt/sources.list.d/tor.list
@@ -115,7 +114,7 @@ function configure_tor() {
     echo "DNSPort 0.0.0.0:5353" >> /etc/tor/torrc 
 
     #enable bridges
-    replace_or_add_line /etc/tor/torrc "%include" "%include $INSTALL_PATH/current_bridges.conf"
+    replace_or_add_line /etc/tor/torrc "%include" "%include /etc/tor/bridges.conf"
 }
 
 function download_latest_tor_relay_scanner() {
@@ -136,7 +135,13 @@ function download_latest_tor_relay_scanner() {
 
 function copy_scripts_to_install_folder() {
 
+    echo "Copy bridge updater script and run it"
     cp $SCRIPT_DIR/tor_proxy_bridges_updater.sh $INSTALL_PATH/tor_proxy_bridges_updater.sh
+    $INSTALL_PATH/tor_proxy_bridges_updater.sh
+    echo "Copy bridges to current configuration"
+    cp $INSTALL_PATH/new_bridges.conf /etc/tor/bridges.conf
+
+    echo "Copy connectivity checker script"
     cp $SCRIPT_DIR/tor_proxy_connectivity_checker.sh $INSTALL_PATH/tor_proxy_connectivity_checker.sh
 }
 
