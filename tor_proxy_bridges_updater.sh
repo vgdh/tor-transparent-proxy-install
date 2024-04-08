@@ -10,7 +10,7 @@ default_br_conf_path=$INSTALL_PATH/new_bridges.conf
 BR_NUM=${1:-$default_br_num}
 NEW_BRIDGES_PATH=${2:-$default_br_conf_path}
 
-echo "Download $BR_NUM bridges and checking TOR bridges and save to $NEW_BRIDGES_PATH"
+echo "Download bridges and checking TOR bridges. Find $BR_NUM working and save to $NEW_BRIDGES_PATH"
 
 PY_VERSION=$(ls -1 /usr/bin/python* | grep -Eo 'python[0-9]\.[0-9]+' | sort -V | tail -n1 | cut -c7-)
 PYTHON=python$PY_VERSION
