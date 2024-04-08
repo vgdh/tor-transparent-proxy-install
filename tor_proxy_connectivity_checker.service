@@ -1,0 +1,12 @@
+[Unit]
+Description=tor proxy connectivity checker script
+
+[Service]
+Type=simple
+ExecStart=/opt/tor-transparent-proxy/tor_proxy_connectivity_checker.sh
+Restart=always
+RestartSec=10
+TimeoutStopSec=600
+
+[Install]
+WantedBy=multi-user.target
