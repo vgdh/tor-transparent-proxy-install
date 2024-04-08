@@ -9,15 +9,14 @@ function install_tor {
         echo "Tor is not installed. Enabling Tor package repository and installing Tor..."
         if [ $(id -u) -eq 0 ]; then
             echo "Running as root user"
+            apt-get update
+            apt-get install apt-transport-https -y            
+            apt-get install gpg -y
 
             echo "Add TOR keyrings"
             echo "deb     [signed-by=/usr/share/keyrings/tor-archive-keyring.gpg] https://deb.torproject.org/torproject.org $(lsb_release -cs) main" >> /etc/apt/sources.list.d/tor.list
             echo "deb-src [signed-by=/usr/share/keyrings/tor-archive-keyring.gpg] https://deb.torproject.org/torproject.org $(lsb_release -cs) main" >> /etc/apt/sources.list.d/tor.list
             
-            apt-get update
-            apt-get install apt-transport-https -y            
-            apt-get install gpg -y
-
             echo "Add TOR gpg key"
             wget -qO- https://deb.torproject.org/torproject.org/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc | gpg --dearmor | tee /usr/share/keyrings/tor-archive-keyring.gpg >/dev/null
             
