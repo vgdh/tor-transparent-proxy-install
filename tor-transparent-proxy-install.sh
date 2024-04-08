@@ -52,8 +52,52 @@ function delete_all_lines {
 }
 
 function configure_nftables() {
-    
 
+    RULESET_FILE_PATH='$SCRIPT_DIR/ruleset.nft'
+
+    echo "This file has been generated during installation you can safely delete it" > $RULESET_FILE_PATH # create RULESET_FILE_PATH
+    echo "add table ip nat" >> $RULESET_FILE_PATH
+    echo "add chain ip nat PREROUTING { type nat hook prerouting priority -100; policy accept; }" >> $RULESET_FILE_PATH
+    echo "add chain ip nat INPUT { type nat hook input priority 100; policy accept; }" >> $RULESET_FILE_PATH
+    echo "add chain ip nat OUTPUT { type nat hook output priority -100; policy accept; }" >> $RULESET_FILE_PATH
+    echo "add chain ip nat POSTROUTING { type nat hook postrouting priority 100; policy accept; }" >> $RULESET_FILE_PATH
+    interfaces=$(ip link show | awk -F': ' '/^[0-9]+:/{print $2}')
+
+    for iface in $interfaces; do # Loop through each interface and filter for eth interfaces
+        if [[ $iface == eth* ]]; then
+            eth_name=$(echo "$iface" | cut -d'@' -f1) # Extract the part before the "@" symbol
+            echo "add rule ip nat PREROUTING iifname \"$eth_name\" tcp dport 22 counter redirect to :22" >> $RULESET_FILE_PATH
+        fi
+    done
+
+    for iface in $interfaces; do # Loop through each interface and filter for eth interfaces
+        if [[ $iface == eth* ]]; then
+            eth_name=$(echo "$iface" | cut -d'@' -f1) # Extract the part before the "@" symbol
+            echo "add rule ip nat PREROUTING iifname \"$eth_name\" tcp dport 9090 counter redirect to :9090" >> $RULESET_FILE_PATH
+        fi
+    done
+
+    for iface in $interfaces; do # Loop through each interface and filter for eth interfaces
+        if [[ $iface == eth* ]]; then
+            eth_name=$(echo "$iface" | cut -d'@' -f1) # Extract the part before the "@" symbol
+            echo "add rule ip nat PREROUTING iifname \"$eth_name\" udp dport 53 counter redirect to :5353" >> $RULESET_FILE_PATH
+        fi
+    done
+
+    for iface in $interfaces; do # Loop through each interface and filter for eth interfaces
+        if [[ $iface == eth* ]]; then
+            eth_name=$(echo "$iface" | cut -d'@' -f1) # Extract the part before the "@" symbol
+            echo "add rule ip nat PREROUTING iifname \"$eth_name\" tcp flags & (fin|syn|rst|ack) == syn counter redirect to :9040" >> $RULESET_FILE_PATH
+        fi
+    done
+
+    nft -f test.nft
+
+    echo "#!/usr/sbin/nft -f" > 
+    echo "flush ruleset" >> /etc/nftables.conf
+    nft list ruleset  >> /etc/nftables.conf
+
+    rm $RULESET_FILE_PATH
 }
 
 function configure_iptables() {
@@ -97,29 +141,30 @@ function configure_tor() {
     # #(assuming this is the static IP address of the server)
     # ip_addresses=$(hostname -I | awk '{print $0}' | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+')
 
-    # delete_all_lines /etc/tor/torrc "SocksPort"
+    delete_all_lines /etc/tor/torrc "SocksPort"
     # for ip in $ip_addresses; do
     #     echo "SocksPort 127.0.0.1:9090" >> /etc/tor/torrc 
     #     echo "SocksPort $ip:9090" >> /etc/tor/torrc 
     # done
 
-    # delete_all_lines /etc/tor/torrc "TransPort"
+    delete_all_lines /etc/tor/torrc "TransPort"
     # for ip in $ip_addresses; do
     #     echo "TransPort 127.0.0.1:9040" >> /etc/tor/torrc 
     #     echo "TransPort $ip:9040" >> /etc/tor/torrc 
     # done
 
-    # delete_all_lines /etc/tor/torrc "DNSPort"
+    delete_all_lines /etc/tor/torrc "DNSPort"
     # for ip in $ip_addresses; do
     #     echo "DNSPort 127.0.0.1:5353" >> /etc/tor/torrc 
     #     echo "DNSPort $ip:5353" >> /etc/tor/torrc 
     # done
+
     echo "SocksPort 0.0.0.0:9090" >> /etc/tor/torrc 
     echo "TransPort 0.0.0.0:9040" >> /etc/tor/torrc 
     echo "DNSPort 0.0.0.0:5353" >> /etc/tor/torrc 
 
-    #enable bridges
-    replace_or_add_line /etc/tor/torrc "%include" "%include /etc/tor/bridges.conf"
+    
+    replace_or_add_line /etc/tor/torrc "%include" "%include /etc/tor/bridges.conf" #enable bridges
 }
 
 function download_latest_tor_relay_scanner() {
@@ -166,7 +211,7 @@ function create_service_tor_auto_update_bridges() {
 
 main() {
     install_tor
-    configure_iptables
+    configure_nftables
     configure_tor
     download_latest_tor_relay_scanner
     copy_scripts_to_install_folder
