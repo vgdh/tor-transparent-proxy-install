@@ -189,6 +189,10 @@ function download_latest_tor_relay_scanner() {
 
 function copy_scripts_to_install_folder() {
 
+    echo "Copy service-test scripts"
+    cp $SCRIPT_DIR/apply_last_downloaded_bridges.sh $INSTALL_PATH/apply_last_downloaded_bridges.sh
+    cp $SCRIPT_DIR/connection_check.sh $INSTALL_PATH/connection_check.sh
+
     echo "Copy bridge updater script and run it"
     cp $SCRIPT_DIR/tor_proxy_bridges_updater.sh $INSTALL_PATH/tor_proxy_bridges_updater.sh
     touch $INSTALL_PATH/current_bridges.conf
