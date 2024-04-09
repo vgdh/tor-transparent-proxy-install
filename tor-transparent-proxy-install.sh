@@ -53,6 +53,8 @@ function delete_all_lines {
 
 function configure_nftables() {
 
+    echo "Configurating nfTABLES"
+
     RULESET_FILE_PATH=$SCRIPT_DIR/ruleset.nft
     
     echo "add table ip nat" > $RULESET_FILE_PATH
@@ -61,7 +63,8 @@ function configure_nftables() {
     echo "add chain ip nat OUTPUT { type nat hook output priority -100; policy accept; }" >> $RULESET_FILE_PATH
     echo "add chain ip nat POSTROUTING { type nat hook postrouting priority 100; policy accept; }" >> $RULESET_FILE_PATH
     interfaces=$(ip link show | awk -F': ' '/^[0-9]+:/{print $2}')
-
+    echo "Found interfaces"
+    echo "$interfaces"
     for iface in $interfaces; do # Loop through each interface and filter for eth interfaces
         if [[ $iface == eth* ]]; then
             eth_name=$(echo "$iface" | cut -d'@' -f1) # Extract the part before the "@" symbol
@@ -90,8 +93,9 @@ function configure_nftables() {
         fi
     done
 
+    nft flush ruleset # delete all rules
     nft -f $RULESET_FILE_PATH
-
+    
     echo "#!/usr/sbin/nft -f" > /etc/nftables.conf
     echo "flush ruleset" >> /etc/nftables.conf
     nft list ruleset  >> /etc/nftables.conf
@@ -124,6 +128,7 @@ EOF
 }
 
 function configure_tor() {
+    echo "Configurating TOR"
     mkdir $INSTALL_PATH
     touch $INSTALL_PATH/tmp_bridges.conf
     touch $INSTALL_PATH/new_bridges.conf
@@ -194,6 +199,7 @@ function copy_scripts_to_install_folder() {
 }
 
 function create_service_tor_auto_update_bridges() {
+    echo "Creating services"
     SERVICE_PATH="/etc/systemd/system"
 
     cp $SCRIPT_DIR/tor_proxy_bridges_updater.service $SERVICE_PATH/tor_proxy_bridges_updater.service
