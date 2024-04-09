@@ -3,7 +3,7 @@
 INSTALL_PATH="/opt/tor-transparent-proxy"
 
 # Set default values for passed params
-default_br_num=1000 # how many bridges to find
+default_br_num=10 # how many bridges to find
 default_br_conf_path=$INSTALL_PATH/new_bridges.conf
 
 # Check if parameters are provided, otherwise use default values
