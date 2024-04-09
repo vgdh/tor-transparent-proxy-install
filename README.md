@@ -26,4 +26,16 @@ Ensure that your OS's Gateway and DNS servers are set to one of the addresses co
 
 ### Note: The script writes all available interfaces in the nftable config. If you add another interface, you'll need to repeat the installation or manually update the rules in /etc/nftables.conf.
 
-
+## Installation:
+1. Clone this repo
+```
+git clone https://github.com/vgdh/tor-transparent-proxy-install.git
+```
+2. Navigate in to the folder
+```
+cd tor-transparent-proxy-install
+```
+3. Run the installation
+```
+./tor-transparent-proxy-install.sh
+```
