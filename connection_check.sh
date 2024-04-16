@@ -1,10 +1,6 @@
 #!/bin/bash
 
-echo " "
-echo " "
-echo "Check internet IP address"
-echo " "
-curl ifconfig.me
+echo "Internet IP address: $(curl -s ifconfig.me)"
 
 echo " "
 echo " "
