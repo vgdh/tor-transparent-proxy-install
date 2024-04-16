@@ -2,6 +2,12 @@
 
 echo " "
 echo " "
+echo "Check internet IP address"
+echo " "
+curl ifconfig.me
+
+echo " "
+echo " "
 echo "Check internet through socks5"
 echo " "
 curl --head  --socks5 127.0.0.1:9090 --request GET google.com --connect-timeout 10
