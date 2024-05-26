@@ -166,6 +166,7 @@ function configure_tor() {
     echo "SocksPort 0.0.0.0:9090" >> /etc/tor/torrc 
     echo "TransPort 0.0.0.0:9040" >> /etc/tor/torrc 
     echo "DNSPort 0.0.0.0:5353" >> /etc/tor/torrc 
+    
     echo "ClientTransportPlugin obfs4 exec /usr/bin/obfs4proxy" >> /etc/tor/torrc 
 
     replace_or_add_line /etc/tor/torrc "%include" "%include /etc/tor/bridges.conf" #enable bridges
